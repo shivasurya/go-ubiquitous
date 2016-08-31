@@ -35,6 +35,7 @@ import com.example.android.sunshine.app.R;
 import com.example.android.sunshine.app.Utility;
 import com.example.android.sunshine.app.data.WeatherContract;
 import com.example.android.sunshine.app.muzei.WeatherMuzeiSource;
+import com.example.android.sunshine.app.watchService.WatchService;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -346,6 +347,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                 updateWidgets();
                 updateMuzei();
                 notifyWeather();
+
             }
             Log.d(LOG_TAG, "Sync Complete. " + cVVector.size() + " Inserted");
             setLocationStatus(getContext(), LOCATION_STATUS_OK);
@@ -356,7 +358,12 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             setLocationStatus(getContext(), LOCATION_STATUS_SERVER_INVALID);
         }
     }
-
+    private void upWatchFace(){
+        Context context = getContext();
+        Intent mIntent = new Intent(context, WatchService.class);
+        mIntent.setAction("ACTION_UPDATE_WATCHFACE");
+        context.startService(mIntent);
+    }
     private void updateWidgets() {
         Context context = getContext();
         // Setting the package ensures that only components in our app will receive the broadcast

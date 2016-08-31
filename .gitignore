@@ -7,6 +7,7 @@
 
 # files for the dex VM
 *.dex
+*.jks
 
 # Java class files
 *.class

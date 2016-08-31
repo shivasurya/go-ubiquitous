@@ -56,8 +56,6 @@ public class WatchService extends IntentService implements
 
     @Override
     public void onConnected(Bundle bundle) {
-        // Updating the WatchFace,
-        // thanks to http://catinean.com/2015/03/28/creating-a-watch-face-with-android-wear-api-part-2/
         Log.d("WatchService", "Updating the WatchFace");
         String locationQuery = Utility.getPreferredLocation(this);
 

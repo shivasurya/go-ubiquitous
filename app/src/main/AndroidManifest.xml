@@ -17,10 +17,8 @@
     package="com.example.android.sunshine.app">
 
     <uses-permission android:name="com.google.android.permission.PROVIDE_BACKGROUND" />
-    <!-- Required to act as a custom watch face. -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
-    <!-- This permission is necessary in order for Sunshine to perform network access. -->
     <uses-permission android:name="android.permission.INTERNET" />
 
     <!-- Permissions required by the sync adapter -->

@@ -49,7 +49,6 @@ public class WatchService extends Service implements
         Uri weatherUri = WeatherContract.WeatherEntry
                 .buildWeatherLocationWithDate(locationQuery, System.currentTimeMillis());
 
-        // Declare the cursor to get the data to show on the WatchFace
         Cursor c = getContentResolver().query(
                 weatherUri,
                 new String[]{WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
@@ -57,7 +56,6 @@ public class WatchService extends Service implements
                         WeatherContract.WeatherEntry.COLUMN_MIN_TEMP
                 }, null, null, null);
         Log.d("data",c.getCount()+"");
-        // Fetch the cursor and send to the WatchFace the extracted weather by the DataApi
         if (c.moveToFirst()) {
             int weatherId = c.getInt(c.getColumnIndex(
                     WeatherContract.WeatherEntry.COLUMN_WEATHER_ID));
@@ -79,12 +77,12 @@ public class WatchService extends Service implements
 
     @Override
     public void onConnectionSuspended(int i) {
-        Log.d("gapiclient", "connection suspended");
+        Log.d("WatchService", "connection suspended");
     }
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
-        Log.d("gapiclient", "onconnection failed");
+        Log.d("WatchService", "onconnection failed");
     }
 
     @Override
@@ -98,7 +96,6 @@ public class WatchService extends Service implements
                     .addOnConnectionFailedListener(this)
                     .addApi(Wearable.API)
                     .build();
-            Log.d("app","googleapiclient going to connect");
             mGoogleApiClient.connect();
         }
         return super.onStartCommand(intent, flags, startId);
@@ -108,7 +105,6 @@ public class WatchService extends Service implements
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.d("bye","bye");
         mGoogleApiClient.disconnect();
     }
 

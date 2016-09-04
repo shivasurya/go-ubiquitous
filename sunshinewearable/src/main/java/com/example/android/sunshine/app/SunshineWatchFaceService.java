@@ -50,15 +50,8 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
     private static final Typeface BOLD_TYPEFACE =
             Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD);
 
-    /**
-     * Update rate in milliseconds for interactive mode. We update once a second since seconds are
-     * displayed in interactive mode.
-     */
     private static final long INTERACTIVE_UPDATE_RATE_MS = TimeUnit.SECONDS.toMillis(1);
 
-    /**
-     * Handler message id for updating the time periodically in interactive mode.
-     */
     private static final int MSG_UPDATE_TIME = 0;
 
     @Override
@@ -116,10 +109,6 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
         float mDividerYOffset;
         float mWeatherYOffset;
 
-        /**
-         * Whether the display supports fewer bits for each color in ambient mode. When true, we
-         * disable anti-aliasing in ambient mode.
-         */
         boolean mLowBitAmbient;
 
         @Override
@@ -183,8 +172,6 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
                 }
             }
 
-            // Whether the timer should be running depends on whether we're visible (as well as
-            // whether we're in ambient mode), so we may need to start or stop the timer.
             updateTimer();
         }
 
@@ -263,22 +250,17 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
                 }
                 invalidate();
             }
-
-            // Whether the timer should be running depends on whether we're visible (as well as
-            // whether we're in ambient mode), so we may need to start or stop the timer.
             updateTimer();
         }
 
         @Override
         public void onDraw(Canvas canvas, Rect bounds) {
-            // Draw the background.
             if (mAmbient) {
                 canvas.drawColor(Color.BLACK);
             } else {
                 canvas.drawRect(0, 0, bounds.width(), bounds.height(), mBackgroundPaint);
             }
 
-            // Draw H:MM in ambient mode or H:MM:SS in interactive mode.
             long now = System.currentTimeMillis();
             mCalendar.setTimeInMillis(now);
 
@@ -320,12 +302,10 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
                 canvas.drawText(secondsText, xOffsetTimeFromCenter + timeTextLen + 5, mTimeYOffset, mTextTimeSecondsPaint);
             }
 
-            // Decide which paint to user for the next bits dependent on ambient mode.
             Paint datePaint = mAmbient ? mTextDateAmbientPaint : mTextDatePaint;
 
             Resources resources = getResources();
 
-            // Draw the date
             String dayOfWeekString   = Utility.getDayOfWeekString(resources, mCalendar.get(Calendar.DAY_OF_WEEK));
             String monthOfYearString = Utility.getMonthOfYearString(resources, mCalendar.get(Calendar.MONTH));
 
@@ -336,9 +316,7 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
             float xOffsetDate = datePaint.measureText(dateText) / 2;
             canvas.drawText(dateText, bounds.centerX() - xOffsetDate, mDateYOffset, datePaint);
 
-            // Draw high and low temp if we have it
             if (mWeatherHigh != null && mWeatherLow != null && mWeatherIcon != null) {
-                // Draw a line to separate date and time from weather elements
                 canvas.drawLine(bounds.centerX() - 20, mDividerYOffset, bounds.centerX() + 20, mDividerYOffset, datePaint);
 
                 float highTextLen = mTextTempHighPaint.measureText(mWeatherHigh);
@@ -358,10 +336,6 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
             }
         }
 
-        /**
-         * Starts the {@link #mUpdateTimeHandler} timer if it should be running and isn't currently
-         * or stops it if it shouldn't be running but currently is.
-         */
         private void updateTimer() {
             mUpdateTimeHandler.removeMessages(MSG_UPDATE_TIME);
             if (shouldTimerBeRunning()) {
@@ -369,17 +343,10 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
             }
         }
 
-        /**
-         * Returns whether the {@link #mUpdateTimeHandler} timer should be running. The timer should
-         * only run when we're visible and in interactive mode.
-         */
         private boolean shouldTimerBeRunning() {
             return isVisible() && !isInAmbientMode();
         }
 
-        /**
-         * Handle updating the time periodically in interactive mode.
-         */
         private void handleUpdateTimeMessage() {
             invalidate();
             if (shouldTimerBeRunning()) {
@@ -393,8 +360,8 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
         @Override
         public void onConnected(Bundle bundle) {
             Wearable.DataApi.addListener(mGoogleApiClient, Engine.this);
-            requestWeatherInfo();
-            Log.d(TAG, "connected");
+            trigger();
+            Log.d(TAG, "connected Google Playservice API client");
         }
 
         @Override
@@ -415,25 +382,28 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
                             mWeatherHigh = dataMap.getString(KEY_HIGH);
                             Log.d(TAG, "High = " + mWeatherHigh);
                         } else {
-                            Log.d(TAG, "What? No high?");
+                            Log.d(TAG, "No Data Available High temp");
                         }
 
                         if (dataMap.containsKey(KEY_LOW)) {
                             mWeatherLow = dataMap.getString(KEY_LOW);
                             Log.d(TAG, "Low = " + mWeatherLow);
                         } else {
-                            Log.d(TAG, "What? No low?");
+                            Log.d(TAG, "No Data Available Low temp");
                         }
 
                         if (dataMap.containsKey(KEY_WEATHER_ID)) {
                             int weatherId = dataMap.getInt(KEY_WEATHER_ID);
                             Drawable b = getResources().getDrawable(Utility.getIconResourceForWeatherCondition(weatherId));
-                            Bitmap icon = ((BitmapDrawable) b).getBitmap();
+                            Bitmap icon = null;
+                            if (((BitmapDrawable) b) != null) {
+                                icon = ((BitmapDrawable) b).getBitmap();
+                            }
                             float scaledWidth = (mTextTempHighPaint.getTextSize() / icon.getHeight()) * icon.getWidth();
                             mWeatherIcon = Bitmap.createScaledBitmap(icon, (int) scaledWidth, (int) mTextTempHighPaint.getTextSize(), true);
 
                         } else {
-                            Log.d(TAG, "What? no weatherId?");
+                            Log.d(TAG, "No Data Available Weather ID ");
                         }
 
                         invalidate();
@@ -447,7 +417,7 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
             Log.d(TAG, "connection failed");
         }
 
-        public void requestWeatherInfo() {
+        public void trigger() {
             PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(WEATHER_PATH);
             putDataMapRequest.getDataMap().putString("DATA", UUID.randomUUID().toString());
             PutDataRequest request = putDataMapRequest.asPutDataRequest();
@@ -457,9 +427,9 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
                         @Override
                         public void onResult(DataApi.DataItemResult dataItemResult) {
                             if (!dataItemResult.getStatus().isSuccess()) {
-                                Log.d(TAG, "Failed asking phone for weather data");
+                                Log.d(TAG, "Trigger failed for weather data");
                             } else {
-                                Log.d(TAG, "Successfully asked for weather data");
+                                Log.d(TAG, "Trigger success for weather data");
                             }
                         }
                     });

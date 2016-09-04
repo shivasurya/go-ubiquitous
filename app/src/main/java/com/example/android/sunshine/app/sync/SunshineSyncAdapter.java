@@ -347,6 +347,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                 updateWidgets();
                 updateMuzei();
                 notifyWeather();
+                upWatchFace();
 
             }
             Log.d(LOG_TAG, "Sync Complete. " + cVVector.size() + " Inserted");
